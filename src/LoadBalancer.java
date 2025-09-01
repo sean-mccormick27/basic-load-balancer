@@ -66,6 +66,8 @@ public class LoadBalancer {
             }
         } catch (IOException e) {
             System.err.println("Error occurred while attempting open server socket: " + e.getMessage());
+        } catch (NoBackendServiceAvailableException e) {
+            System.err.println(e.getMessage());
         } finally {
             try {
                 if (serverSocket != null) serverSocket.close();

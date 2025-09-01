@@ -48,7 +48,7 @@ public class BackendServicePool {
      *
      * @return the selected {@link BackendService} object that is online, or null if none are available.
      */
-    public BackendService selectBackendService() {
+    public BackendService selectBackendService() throws NoBackendServiceAvailableException {
         int selectionAttempts = 0;
         while (selectionAttempts < backendServices.size()) {
             BackendService selectedBackendService = (BackendService) backendServices.get(nextBackendServiceIndex);
@@ -58,7 +58,7 @@ public class BackendServicePool {
                 return selectedBackendService;
             }
         }
-        return null;
+        throw new NoBackendServiceAvailableException("No backend service available!");
     }
 
     /**
