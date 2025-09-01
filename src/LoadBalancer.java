@@ -51,7 +51,7 @@ public class LoadBalancer {
                 Socket clientSocket = serverSocket.accept();
                 BackendService selectedBackendService = backendServicePool.selectBackendService();
 
-                Thread clientConnectionThread = new Thread(new ClientConnectionHandler(clientSocket, selectedBackendService.getServiceName()));
+                Thread clientConnectionThread = new Thread(new ClientConnectionHandler(clientSocket, selectedBackendService.getHostName(), selectedBackendService.getPortNumber()));
                 clientConnectionThread.start();
             }
         } catch (IOException e) {
