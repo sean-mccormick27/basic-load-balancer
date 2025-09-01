@@ -40,17 +40,25 @@ public class BackendServicePool {
 
     /**
      * Selects the {@link BackendService} where an incoming TCP message is
-     * to be forwarded to. A round robin selection algorithm is used, with
-     * an index being maintained to select the next available {@link BackendService}
-     * object in the list.
+     * to be forwarded to. A round robin selection algorithm is used, maintaining an
+     * index of the next backend service to be used. Each backend service in
+     * the pool is checked in turn, returning the first available {@link BackendService}
+     * that is online. If no available backend services exist in the pool, no
+     * {@link BackendService} object is returned.
      *
-     * @return the selected {@link BackendService} object.
+     * @return the selected {@link BackendService} object that is online, or null if none are available.
      */
     public BackendService selectBackendService() {
-        if (nextBackendServiceIndex == backendServices.size()) {
-            nextBackendServiceIndex = 0;
+        int selectionAttempts = 0;
+        while (selectionAttempts < backendServices.size()) {
+            BackendService selectedBackendService = (BackendService) backendServices.get(nextBackendServiceIndex);
+            nextBackendServiceIndex = (nextBackendServiceIndex + 1) % backendServices.size();
+            selectionAttempts++;
+            if (selectedBackendService.isOnline()) {
+                return selectedBackendService;
+            }
         }
-        return (BackendService) backendServices.get(nextBackendServiceIndex++);
+        return null;
     }
 
     /**
