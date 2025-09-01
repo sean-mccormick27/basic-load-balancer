@@ -2,15 +2,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-
+/**
+ * A class used to represent a TCP client connection in its own thread.
+ */
 public class ClientConnectionHandler implements Runnable {
 
     private final Socket clientSocket;
-    private final BackendService backendService;
+    private final String backendServiceName;
 
-    public ClientConnectionHandler(Socket clientSocket, BackendService backendService) {
+    public ClientConnectionHandler(Socket clientSocket, String backendServiceName) {
         this.clientSocket = clientSocket;
-        this.backendService = backendService;
+        this.backendServiceName = backendServiceName;
     }
 
     public void run() {
@@ -20,7 +22,7 @@ public class ClientConnectionHandler implements Runnable {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                System.out.println("Message from client [" + clientAddress + "]: " + line + " sent to service: [" + backendService.getServiceName() + "]");
+                System.out.println("Message from client [" + clientAddress + "]: " + line + " sent to service: [" + backendServiceName + "]");
             }
         } catch (IOException e) {
             System.err.println("Issue with processing TCP message: " + e.getMessage());

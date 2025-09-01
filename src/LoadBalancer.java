@@ -49,9 +49,9 @@ public class LoadBalancer {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-
                 BackendService selectedBackendService = backendServicePool.selectBackendService();
-                Thread clientConnectionThread = new Thread(new ClientConnectionHandler(clientSocket, selectedBackendService));
+
+                Thread clientConnectionThread = new Thread(new ClientConnectionHandler(clientSocket, selectedBackendService.getServiceName()));
                 clientConnectionThread.start();
             }
         } catch (IOException e) {
