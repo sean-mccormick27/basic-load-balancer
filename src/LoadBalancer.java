@@ -3,23 +3,33 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 /**
  * A class representing a load balancer listens for incoming TCP messages
- * on a specified port number, and prints any received messages' contents.
+ * on a specified port number. Incoming TCP messages are load balanced and sent
+ * to a backend service for further processing, as appropriate.
  */
 public class LoadBalancer {
 
     /** The port number that the TCP server is listening for incoming messages from. */
     private final int listenPort;
 
+    /** The pool of backend services that TCP messages are load balanced across. */
+    private final BackendServicePool backendServicePool;
+
     /**
-     * Constructs a load balancer to listen for TCP messages on a given port number.
+     * Constructs a load balancer to listen for TCP messages on a given port number
+     * and load balance said messages across a list pool of backend services, which
+     * will be placed in a selection pool.
      *
      * @param listenPort the port number.
+     * @param backendServices the list of backend services to be placed in the
+     *                        selection pool.
      */
-    public LoadBalancer(int listenPort) {
+    public LoadBalancer(int listenPort, List backendServices) {
         this.listenPort = listenPort;
+        this.backendServicePool = new BackendServicePool(backendServices);
     }
 
     /**
@@ -42,13 +52,15 @@ public class LoadBalancer {
                 String clientAddress = clientSocket.getInetAddress().toString();
                 System.out.println("Client connected: [" + clientAddress + "]");
 
+                BackendService selectedBackendService = backendServicePool.selectBackendService();
+                //TODO: Functionality to deal with scenario where no available backend service exists
+
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
-                    System.out.println("Message from client [" + clientAddress + "]: " + line);
+                    System.out.println("Message from client [" + clientAddress + "]: " + line + " sent to service: [" + selectedBackendService.getServiceName() + "]");
                 }
-
                 clientSocket.close();
             }
         } catch (IOException e) {
