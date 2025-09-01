@@ -49,20 +49,10 @@ public class LoadBalancer {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                String clientAddress = clientSocket.getInetAddress().toString();
-                System.out.println("Client connected: [" + clientAddress + "]");
 
-                //TODO: Functionality to deal with scenario where no available backend service exists
-
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                BackendService selectedBackendService;
-
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    selectedBackendService = backendServicePool.selectBackendService();
-                    System.out.println("Message from client [" + clientAddress + "]: " + line + " sent to service: [" + selectedBackendService.getServiceName() + "]");
-                }
-                clientSocket.close();
+                BackendService selectedBackendService = backendServicePool.selectBackendService();
+                Thread clientConnectionThread = new Thread(new ClientConnectionHandler(clientSocket, selectedBackendService));
+                clientConnectionThread.start();
             }
         } catch (IOException e) {
             System.err.println("Error occurred while attempting open server socket: " + e.getMessage());
