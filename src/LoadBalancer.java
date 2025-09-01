@@ -8,7 +8,9 @@ import java.util.List;
 /**
  * A class representing a load balancer listens for incoming TCP messages
  * on a specified port number. Incoming TCP messages are load balanced and sent
- * to a backend service for further processing, as appropriate.
+ * to a backend service for further processing, as appropriate. The load balancer
+ * also conducts a health check as per a specified interval, ensuring that no
+ * requests can be sent to these if they are offline.
  */
 public class LoadBalancer {
 
@@ -17,6 +19,11 @@ public class LoadBalancer {
 
     /** The pool of backend services that TCP messages are load balanced across. */
     private final BackendServicePool backendServicePool;
+
+    /** The health checker which periodically checks the online status of any
+     *  backend services where traffic can be directed towards.
+     */
+    private final BackendServiceHealthChecker backendServiceHealthChecker;
 
     /**
      * Constructs a load balancer to listen for TCP messages on a given port number
@@ -27,21 +34,24 @@ public class LoadBalancer {
      * @param backendServices the list of backend services to be placed in the
      *                        selection pool.
      */
-    public LoadBalancer(int listenPort, List backendServices) {
+    public LoadBalancer(int listenPort, int healthCheckInterval, List backendServices) {
         this.listenPort = listenPort;
         this.backendServicePool = new BackendServicePool(backendServices);
+        this.backendServiceHealthChecker = new BackendServiceHealthChecker(backendServicePool, healthCheckInterval);
     }
 
     /**
      * Starts the load balancer.
      * The load balancer will listen for TCP messages on the given port number, printing the
-     * content of these messages whenever they are received.
+     * content of these messages whenever they are received. It will also conduct a periodic
+     * health check
      *
      * @throws IOException if an error occurs when attempting to listen for, accept or
      * process any incoming TCP messages.
      */
     public void start() {
         ServerSocket serverSocket = null;
+        new Thread(backendServiceHealthChecker).start();
 
         try {
             serverSocket = new ServerSocket(listenPort);
