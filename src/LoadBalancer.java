@@ -52,13 +52,14 @@ public class LoadBalancer {
                 String clientAddress = clientSocket.getInetAddress().toString();
                 System.out.println("Client connected: [" + clientAddress + "]");
 
-                BackendService selectedBackendService = backendServicePool.selectBackendService();
                 //TODO: Functionality to deal with scenario where no available backend service exists
 
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                BackendService selectedBackendService;
 
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
+                    selectedBackendService = backendServicePool.selectBackendService();
                     System.out.println("Message from client [" + clientAddress + "]: " + line + " sent to service: [" + selectedBackendService.getServiceName() + "]");
                 }
                 clientSocket.close();
