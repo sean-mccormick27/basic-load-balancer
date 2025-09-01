@@ -61,4 +61,15 @@ public class BackendService {
     public void setOnline(boolean online) {
         isOnline = online;
     }
+
+    /**
+     * Gets a String representation of the backend service details i.e.
+     * its hostname, port number and online status.
+     *
+     * @return String representation of the backend service details.
+     */
+    public String toString() {
+        return hostName + ":" + portNumber + " is " + (isOnline ? "ON" : "OFF") + "LINE";
+    }
+
 }
